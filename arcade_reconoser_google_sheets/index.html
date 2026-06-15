@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arcade reconoSER | UDLA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800;900&display=swap');
+
+    :root{
+      --udla:#c10230;
+      --black:#000000;
+      --white:#ffffff;
+      --soft:#f7f7f7;
+      --gray:#e9e9e9;
+      --text:#111111;
+      --muted:#555555;
+      --shadow:0 24px 70px rgba(0,0,0,.16);
+      --radius:30px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      overflow-x:hidden;
+      font-family:"Source Sans 3", "Source Sans Pro", Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:var(--white);
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:-2;
+      background:
+        linear-gradient(124deg, transparent 0 69%, rgba(193,2,48,.96) 69% 100%),
+        linear-gradient(124deg, transparent 0 72%, rgba(0,0,0,.96) 72% 74%, transparent 74% 100%),
+        radial-gradient(circle at 78% 14%, rgba(193,2,48,.08), transparent 28%);
+    }
+
+    body::after{
+      content:"";
+      position:fixed;
+      inset:auto -24vw -26vw auto;
+      width:62vw;
+      height:62vw;
+      border-radius:50%;
+      background:rgba(193,2,48,.07);
+      pointer-events:none;
+      z-index:-3;
+    }
+
+    a{color:inherit;text-decoration:none}
+    button{font-family:inherit}
+
+    .page{
+      width:min(1240px, calc(100% - 48px));
+      margin:0 auto;
+      padding:26px 0 44px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:24px;
+      margin-bottom:22px;
+    }
+
+    .udla-logo{
+      width:150px;
+      max-width:30vw;
+      height:auto;
+      display:block;
+    }
+
+    .reconoser-logo{
+      width:190px;
+      max-width:38vw;
+      height:auto;
+      display:block;
+      filter:drop-shadow(0 8px 18px rgba(193,2,48,.13));
+    }
+
+    .hero{
+      min-height:560px;
+      display:grid;
+      grid-template-columns:minmax(0,1.05fr) minmax(380px,.95fr);
+      align-items:center;
+      gap:22px;
+      position:relative;
+    }
+
+    .hero-copy{
+      position:relative;
+      z-index:2;
+      padding:32px 0 42px;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+      color:var(--black);
+      font-size:15px;
+      font-weight:900;
+      letter-spacing:.28em;
+      text-transform:uppercase;
+    }
+
+    .eyebrow::before{
+      content:"";
+      width:58px;
+      height:5px;
+      border-radius:999px;
+      background:var(--udla);
+    }
+
+    h1{
+      margin:0;
+      line-height:.86;
+      letter-spacing:-.065em;
+      font-size:clamp(76px, 10vw, 152px);
+      font-weight:900;
+      text-transform:uppercase;
+    }
+
+    h1 .red{color:var(--udla)}
+    h1 .black{color:var(--black)}
+
+    .slogan{
+      margin:30px 0 0;
+      font-size:clamp(30px, 3.5vw, 48px);
+      line-height:1.03;
+      font-weight:900;
+      letter-spacing:-.035em;
+    }
+
+    .slogan span{color:var(--udla)}
+
+    .intro{
+      max-width:560px;
+      margin:16px 0 0;
+      color:var(--muted);
+      font-size:20px;
+      line-height:1.35;
+      font-weight:650;
+    }
+
+    .mascot-zone{
+      position:relative;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      min-height:570px;
+      overflow:visible;
+    }
+
+    .mascot-shape{
+      position:absolute;
+      right:-70px;
+      bottom:8px;
+      width:530px;
+      height:530px;
+      border-radius:50%;
+      background:linear-gradient(135deg, rgba(255,255,255,.9), rgba(193,2,48,.08));
+      z-index:0;
+    }
+
+    .mascot{
+      position:relative;
+      z-index:1;
+      width:min(480px, 42vw);
+      height:auto;
+      display:block;
+      filter:drop-shadow(0 30px 48px rgba(0,0,0,.25));
+      transform:translateX(-12px);
+    }
+
+    .selector{
+      margin-top:18px;
+      position:relative;
+      overflow:hidden;
+      background:var(--black);
+      color:var(--white);
+      border-radius:38px;
+      padding:34px;
+      box-shadow:var(--shadow);
+    }
+
+    .selector::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 10% 18%, rgba(193,2,48,.32), transparent 28%),
+        linear-gradient(135deg, transparent 0 70%, rgba(193,2,48,.36) 70% 100%);
+    }
+
+    .section-head{
+      position:relative;
+      z-index:1;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:24px;
+      margin-bottom:24px;
+    }
+
+    .section-head h2{
+      margin:0;
+      font-size:clamp(30px, 3.3vw, 48px);
+      line-height:1;
+      font-weight:900;
+      letter-spacing:-.045em;
+    }
+
+    .section-head h2::after{
+      content:"";
+      display:block;
+      width:84px;
+      height:5px;
+      margin-top:14px;
+      border-radius:999px;
+      background:var(--udla);
+    }
+
+    .section-head p{
+      margin:0;
+      max-width:420px;
+      color:rgba(255,255,255,.72);
+      font-size:16px;
+      line-height:1.35;
+      font-weight:650;
+    }
+
+    .games{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+      gap:18px;
+    }
+
+    .game-card{
+      min-height:232px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      padding:22px;
+      color:var(--black);
+      background:var(--white);
+      border:2px solid rgba(255,255,255,.1);
+      border-radius:24px;
+      box-shadow:0 16px 34px rgba(0,0,0,.23);
+      cursor:pointer;
+      transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .game-card:hover,
+    .game-card:focus-visible{
+      transform:translateY(-6px);
+      box-shadow:0 25px 46px rgba(0,0,0,.28);
+      border-color:var(--udla);
+      outline:none;
+    }
+
+    .game-card.platform{
+      background:linear-gradient(135deg, var(--udla), #8f001f);
+      color:var(--white);
+      border-color:rgba(255,255,255,.28);
+    }
+
+    .game-card.platform .game-icon{
+      background:var(--white);
+      color:var(--udla);
+    }
+
+    .game-card.platform p{
+      color:rgba(255,255,255,.84);
+    }
+
+    .game-card.platform .play{
+      background:var(--white);
+      color:var(--udla);
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+    }
+
+    .game-icon{
+      width:68px;
+      height:68px;
+      margin-bottom:18px;
+      border-radius:22px;
+      display:grid;
+      place-items:center;
+      background:var(--udla);
+      color:var(--white);
+      font-size:34px;
+      font-weight:900;
+    }
+
+    .game-card h3{
+      margin:0 0 8px;
+      font-size:24px;
+      line-height:1.04;
+      letter-spacing:-.035em;
+      font-weight:900;
+    }
+
+    .game-card p{
+      margin:0;
+      color:#555;
+      font-size:15px;
+      line-height:1.3;
+      font-weight:650;
+    }
+
+    .play{
+      align-self:flex-start;
+      margin-top:20px;
+      min-width:118px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:12px 22px;
+      border:0;
+      border-radius:999px;
+      background:var(--udla);
+      color:var(--white);
+      font-size:16px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 10px 18px rgba(193,2,48,.25);
+    }
+
+    .player{
+      position:fixed;
+      inset:0;
+      display:none;
+      padding:18px;
+      background:rgba(0,0,0,.82);
+      z-index:20;
+    }
+
+    .player.show{display:block}
+
+    .shell{
+      height:100%;
+      overflow:hidden;
+      border-radius:24px;
+      background:var(--white);
+      border:2px solid rgba(255,255,255,.24);
+      box-shadow:0 30px 90px rgba(0,0,0,.42);
+    }
+
+    .bar{
+      min-height:64px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:12px 16px;
+      background:var(--black);
+      color:var(--white);
+    }
+
+    .now{
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.02em;
+    }
+
+    .bar-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+    .bar button{
+      border:0;
+      border-radius:999px;
+      padding:10px 16px;
+      font-size:15px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .bar .reload{background:var(--white);color:var(--black)}
+    .bar .complete{background:rgba(193,2,48,.14);color:var(--white);border:1px solid rgba(255,255,255,.3)}
+    .bar .close{background:var(--udla);color:var(--white)}
+
+    iframe{
+      width:100%;
+      height:calc(100% - 64px);
+      border:0;
+      background:var(--white);
+    }
+
+
+
+    .access-screen{
+      position:fixed;
+      inset:0;
+      z-index:50;
+      display:grid;
+      place-items:center;
+      padding:24px;
+      background:
+        linear-gradient(124deg, rgba(255,255,255,.98) 0 67%, rgba(193,2,48,.98) 67% 100%),
+        var(--white);
+    }
+
+    .access-screen.hidden{display:none}
+
+    .access-card{
+      width:min(980px, 100%);
+      min-height:560px;
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:24px;
+      align-items:center;
+      padding:38px;
+      border-radius:38px;
+      background:rgba(255,255,255,.94);
+      border:1px solid rgba(0,0,0,.08);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .access-card::after{
+      content:"";
+      position:absolute;
+      right:-160px;
+      bottom:-180px;
+      width:420px;
+      height:420px;
+      border-radius:50%;
+      background:rgba(193,2,48,.08);
+      pointer-events:none;
+    }
+
+    .access-copy{position:relative;z-index:2}
+
+    .access-logo{
+      width:170px;
+      height:auto;
+      display:block;
+      margin-bottom:34px;
+    }
+
+    .access-eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:14px;
+      color:var(--black);
+      font-size:14px;
+      font-weight:900;
+      letter-spacing:.24em;
+      text-transform:uppercase;
+    }
+
+    .access-eyebrow::before{
+      content:"";
+      width:44px;
+      height:5px;
+      border-radius:999px;
+      background:var(--udla);
+    }
+
+    .access-title{
+      margin:0;
+      max-width:520px;
+      font-size:clamp(54px, 7vw, 92px);
+      line-height:.88;
+      letter-spacing:-.06em;
+      text-transform:uppercase;
+      font-weight:900;
+    }
+
+    .access-title span{color:var(--udla)}
+
+    .access-subtitle{
+      margin:18px 0 26px;
+      max-width:460px;
+      font-size:20px;
+      line-height:1.32;
+      color:var(--muted);
+      font-weight:650;
+    }
+
+    .email-form{
+      display:grid;
+      gap:12px;
+      max-width:500px;
+    }
+
+    .email-label{
+      font-size:15px;
+      font-weight:900;
+      color:var(--black);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .email-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .email-input{
+      width:100%;
+      min-height:56px;
+      border:2px solid #e5e5e5;
+      border-radius:999px;
+      padding:0 20px;
+      font:700 17px/1 "Source Sans 3", "Source Sans Pro", Arial, Helvetica, sans-serif;
+      outline:none;
+      background:var(--white);
+      color:var(--black);
+      transition:border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .email-input:focus{
+      border-color:var(--udla);
+      box-shadow:0 0 0 4px rgba(193,2,48,.12);
+    }
+
+    .email-submit{
+      min-height:56px;
+      flex:0 0 auto;
+      border:0;
+      border-radius:999px;
+      padding:0 26px;
+      background:var(--udla);
+      color:var(--white);
+      font-size:17px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 12px 24px rgba(193,2,48,.24);
+    }
+
+    .email-error{
+      min-height:22px;
+      margin:0;
+      color:var(--udla);
+      font-size:15px;
+      font-weight:800;
+    }
+
+    .access-mascot-wrap{
+      position:relative;
+      z-index:2;
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      min-height:470px;
+    }
+
+    .access-mascot{
+      width:min(390px, 38vw);
+      height:auto;
+      display:block;
+      filter:drop-shadow(0 28px 44px rgba(0,0,0,.22));
+    }
+
+    .user-strip{
+      display:none;
+      align-items:center;
+      justify-content:flex-end;
+      gap:10px;
+      margin:-8px 0 10px;
+      font-size:15px;
+      font-weight:800;
+      color:var(--muted);
+    }
+
+    .user-strip.show{display:flex}
+
+    .user-mail{
+      color:var(--black);
+      font-weight:900;
+    }
+
+    .change-user,
+    .export-records{
+      border:0;
+      border-radius:999px;
+      padding:8px 14px;
+      background:rgba(193,2,48,.1);
+      color:var(--udla);
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .export-records{display:inline-flex}
+
+    @media (max-width:980px){
+      .access-card{grid-template-columns:1fr;min-height:auto}
+      .access-mascot-wrap{min-height:260px;justify-content:flex-end}
+      .access-mascot{width:min(300px, 70vw)}
+      .email-row{flex-direction:column;align-items:stretch}
+      .email-submit{width:100%}
+      body::before{background:linear-gradient(125deg, transparent 0 82%, rgba(193,2,48,.96) 82% 100%)}
+      .hero{grid-template-columns:1fr;min-height:auto}
+      .hero-copy{padding-bottom:0}
+      .mascot-zone{min-height:390px;justify-content:flex-end}
+      .mascot{width:min(340px, 72vw);transform:none}
+      .mascot-shape{width:360px;height:360px;right:-70px}
+      .games{grid-template-columns:repeat(2, minmax(0, 1fr))}
+      .section-head{align-items:flex-start;flex-direction:column}
+    }
+
+    @media (max-width:600px){
+      .access-screen{padding:14px}
+      .access-card{padding:24px;border-radius:26px}
+      .access-logo{width:140px;margin-bottom:24px}
+      .access-title{font-size:50px}
+      .access-subtitle{font-size:17px}
+      .page{width:min(100% - 28px, 1240px);padding-top:18px}
+      .topbar{align-items:flex-start}
+      .udla-logo{width:114px}
+      .reconoser-logo{width:140px}
+      h1{font-size:64px}
+      .intro{font-size:17px}
+      .mascot-zone{min-height:320px}
+      .selector{border-radius:26px;padding:22px}
+      .games{grid-template-columns:1fr}
+      .game-card{min-height:188px}
+    }
+  </style>
+</head>
+<body>
+
+  <section id="accessScreen" class="access-screen" aria-label="Ingreso al Arcade reconoSER">
+    <div class="access-card">
+      <div class="access-copy">
+        <img class="access-logo" src="assets/reconoser-logo.png" alt="reconoSER" />
+        <div class="access-eyebrow">Arcade de cultura UDLA</div>
+        <h2 class="access-title">Juega y <span>reconoce</span></h2>
+        <p class="access-subtitle">Ingresa con tu correo institucional autorizado para comenzar la experiencia.</p>
+
+        <form id="emailForm" class="email-form" novalidate>
+          <label class="email-label" for="emailInput">Correo institucional</label>
+          <div class="email-row">
+            <input id="emailInput" class="email-input" type="email" inputmode="email" autocomplete="email" placeholder="nombre.apellido@udla.edu.ec" />
+            <button class="email-submit" type="submit">Ingresar</button>
+          </div>
+          <p id="emailError" class="email-error" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <div class="access-mascot-wrap" aria-hidden="true">
+        <img class="access-mascot" src="assets/udal-mascota.png" alt="" />
+      </div>
+    </div>
+  </section>
+
+  <main class="page">
+    <header class="topbar" aria-label="Identidad institucional">
+      <img class="udla-logo" src="assets/udla-logo.png" alt="UDLA" />
+      <img class="reconoser-logo" src="assets/reconoser-logo.png" alt="reconoSER" />
+    </header>
+
+    <div id="userStrip" class="user-strip" aria-live="polite">
+      <span>Correo registrado:</span>
+      <span id="userMail" class="user-mail"></span>
+      <button id="exportRecords" class="export-records" type="button">Descargar mi registro</button>
+      <button id="changeUser" class="change-user" type="button">Cambiar</button>
+    </div>
+
+    <section class="hero" aria-label="Arcade reconoSER">
+      <div class="hero-copy">
+        <div class="eyebrow">Arcade de cultura UDLA</div>
+        <h1><span class="black">Arcade</span><br><span class="black">recono</span><span class="red">SER</span></h1>
+        <p class="slogan">Juega y <span>reconoce</span></p>
+        <p class="intro">Una experiencia interactiva para vivir la cultura UDLA a través de juegos simples, rápidos y memorables.</p>
+      </div>
+
+      <div class="mascot-zone" aria-hidden="true">
+        <div class="mascot-shape"></div>
+        <img class="mascot" src="assets/udal-mascota.png" alt="" />
+      </div>
+    </section>
+
+    <section class="selector" aria-labelledby="titulo-juegos">
+      <div class="section-head">
+        <h2 id="titulo-juegos">Selecciona tu juego</h2>
+        <p>Elige una actividad y empieza la experiencia reconoSER.</p>
+      </div>
+
+      <div class="games" id="games"></div>
+    </section>
+  </main>
+
+  <section id="player" class="player" role="dialog" aria-modal="true" aria-label="Juego seleccionado">
+    <div class="shell">
+      <div class="bar">
+        <div class="now" id="nowTitle">Juego</div>
+        <div class="bar-actions">
+          <button class="reload" id="reload" type="button">Recargar</button>
+          <button class="complete" id="completeGame" type="button">Marcar completado</button>
+          <button class="close" id="close" type="button">Volver</button>
+        </div>
+      </div>
+      <iframe id="frame" title="Juego seleccionado" src="about:blank"></iframe>
+    </div>
+  </section>
+
+  <script>
+    const GAMES = [
+      {
+        key: "pacman",
+        icon: "●",
+        title: "Pac-Man reconoSER",
+        description: "Recorre el tablero y activa mensajes vinculados a la cultura UDLA.",
+        href: "juegos/pacman/index.html",
+        type: "game"
+      },
+      {
+        key: "memoria",
+        icon: "◆",
+        title: "Memoria de valores",
+        description: "Encuentra las parejas y conecta conceptos clave de nuestra cultura.",
+        href: "juegos/memoria/index.html",
+        type: "game"
+      },
+      {
+        key: "sopa",
+        icon: "Aa",
+        title: "Sopa de letras",
+        description: "Busca palabras relacionadas con los valores que nos representan.",
+        href: "juegos/sopa/index.html",
+        type: "game"
+      },
+      {
+        key: "rompecabezas",
+        icon: "▣",
+        title: "Rompecabezas",
+        description: "Arma la imagen y completa el desafío visual reconoSER.",
+        href: "juegos/rompecabezas/index.html",
+        type: "game"
+      },
+      {
+        key: "plataforma",
+        icon: "★",
+        title: "Plataforma reconoSER",
+        description: "Ingresa a la plataforma oficial reconoSER para continuar la experiencia.",
+        href: "https://reconoser.academikus.com/",
+        type: "external"
+      }
+    ];
+
+    const gamesEl = document.getElementById("games");
+    const player = document.getElementById("player");
+    const frame = document.getElementById("frame");
+    const nowTitle = document.getElementById("nowTitle");
+    const reload = document.getElementById("reload");
+    const completeGame = document.getElementById("completeGame");
+    const close = document.getElementById("close");
+    let currentGame = null;
+
+    const accessScreen = document.getElementById("accessScreen");
+    const emailForm = document.getElementById("emailForm");
+    const emailInput = document.getElementById("emailInput");
+    const emailError = document.getElementById("emailError");
+    const userStrip = document.getElementById("userStrip");
+    const userMail = document.getElementById("userMail");
+    const changeUser = document.getElementById("changeUser");
+    const exportRecords = document.getElementById("exportRecords");
+
+    const EMAIL_KEY = "correoUDLA";
+    const RECORDS_KEY = "registrosArcadeReconoSER";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwtHXDcLYiI5HXnfoQmfaa2yzASEwdaygR_JobykPgfQCj22VAsUPTdjfEWw4N9dRaZ/exec";
+    const UDLA_DOMAIN = "@udla.edu.ec";
+    const AUTHORIZED_EMAILS = [
+      "denisse.agama@udla.edu.ec",
+      "myriamcecilia.albuja@udla.edu.ec",
+      "frank.cevallos@udla.edu.ec",
+      "erika.moscoso@udla.edu.ec",
+      "pamela.munoz.lastra@udla.edu.ec",
+      "bayron.quishpe@udla.edu.ec",
+      "danielaalejandra.reyes@udla.edu.ec",
+      "dominique.romero@udla.edu.ec",
+      "maria.ruiz.ruales@udla.edu.ec",
+      "evelyn.segovia@udla.edu.ec",
+      "yadira.torres@udla.edu.ec",
+      "karla.viera@udla.edu.ec",
+      "paola.tobar@udla.edu.ec",
+      "esteban.carranza.jimenez@udla.edu.ec"
+    ];
+    let authorizedEmails = AUTHORIZED_EMAILS.map(email => email.trim().toLowerCase());
+
+    function normalizeEmail(value){
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function isValidUDLAEmail(email){
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.endsWith(UDLA_DOMAIN);
+    }
+
+    function isAuthorizedEmail(email){
+      return authorizedEmails.includes(normalizeEmail(email));
+    }
+
+    function showAccessScreen(message = ""){
+      accessScreen.classList.remove("hidden");
+      emailError.textContent = message;
+      setTimeout(() => emailInput.focus(), 80);
+    }
+
+    function getRecords(){
+      try{
+        const records = JSON.parse(localStorage.getItem(RECORDS_KEY) || "[]");
+        return Array.isArray(records) ? records : [];
+      }catch(error){
+        return [];
+      }
+    }
+
+
+    function sendRecordToSheet(record){
+      if(!GOOGLE_SCRIPT_URL) return;
+      try{
+        fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify({
+            fechaHora: record.fechaHora,
+            correo: record.correo,
+            juego: record.juego,
+            estado: record.estado
+          })
+        }).catch(() => {
+          // Si no hay conexión, el registro queda guardado localmente y se puede exportar.
+        });
+      }catch(error){
+        // Si el navegador bloquea el envío, el registro queda guardado localmente y se puede exportar.
+      }
+    }
+
+    function saveRecord(juego, estado){
+      const email = normalizeEmail(localStorage.getItem(EMAIL_KEY));
+      if(!email) return;
+      const records = getRecords();
+      const record = {
+        fechaHora: new Date().toISOString(),
+        correo: email,
+        juego,
+        estado
+      };
+      records.push(record);
+      localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+      sendRecordToSheet(record);
+    }
+
+    function unlockArcade(email){
+      localStorage.setItem(EMAIL_KEY, email);
+      userMail.textContent = email;
+      userStrip.classList.add("show");
+      accessScreen.classList.add("hidden");
+      if(sessionStorage.getItem("ingresoRegistrado") !== email){
+        saveRecord("Arcade reconoSER", "Ingreso autorizado");
+        sessionStorage.setItem("ingresoRegistrado", email);
+      }
+    }
+
+    function requireEmail(){
+      const savedEmail = normalizeEmail(localStorage.getItem(EMAIL_KEY));
+      if(isValidUDLAEmail(savedEmail) && isAuthorizedEmail(savedEmail)){
+        unlockArcade(savedEmail);
+      }else{
+        localStorage.removeItem(EMAIL_KEY);
+        showAccessScreen();
+      }
+    }
+
+    emailForm.addEventListener("submit", event => {
+      event.preventDefault();
+      const email = normalizeEmail(emailInput.value);
+      if(!email){
+        emailError.textContent = "Por favor ingresa tu correo institucional.";
+        emailInput.focus();
+        return;
+      }
+      if(!isValidUDLAEmail(email)){
+        emailError.textContent = "Debes ingresar un correo institucional válido de la UDLA.";
+        emailInput.focus();
+        return;
+      }
+      if(!isAuthorizedEmail(email)){
+        emailError.textContent = "Tu correo no está habilitado para participar en este piloto del Arcade reconoSER.";
+        emailInput.focus();
+        return;
+      }
+      unlockArcade(email);
+    });
+
+    changeUser.addEventListener("click", () => {
+      localStorage.removeItem(EMAIL_KEY);
+      sessionStorage.removeItem("ingresoRegistrado");
+      emailInput.value = "";
+      userStrip.classList.remove("show");
+      showAccessScreen();
+    });
+
+    exportRecords.addEventListener("click", () => {
+      const records = getRecords();
+      if(!records.length){
+        alert("Todavía no hay registros para descargar en este navegador.");
+        return;
+      }
+      const header = ["FechaHora", "Correo", "Juego", "Estado"];
+      const rows = records.map(record => [
+        record.fechaHora || "",
+        record.correo || "",
+        record.juego || "",
+        record.estado || ""
+      ]);
+      const csv = [header, ...rows]
+        .map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `registros-arcade-reconoser-${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
+
+    function renderGames(){
+      gamesEl.innerHTML = "";
+      GAMES.forEach(game => {
+        const card = document.createElement("article");
+        card.className = `game-card ${game.type === "external" ? "platform" : ""}`.trim();
+        card.tabIndex = 0;
+        card.setAttribute("role", "button");
+        card.setAttribute("aria-label", `${game.type === "external" ? "Ingresar a" : "Jugar"} ${game.title}`);
+        card.innerHTML = `
+          <div>
+            <div class="game-icon" aria-hidden="true">${game.icon}</div>
+            <h3>${game.title}</h3>
+            <p>${game.description}</p>
+          </div>
+          <button class="play" type="button">${game.type === "external" ? "Ingresar" : "Jugar"}</button>
+        `;
+        card.addEventListener("click", () => openGame(game));
+        card.addEventListener("keydown", event => {
+          if(event.key === "Enter" || event.key === " "){
+            event.preventDefault();
+            openGame(game);
+          }
+        });
+        gamesEl.appendChild(card);
+      });
+    }
+
+    function openGame(game){
+      const email = normalizeEmail(localStorage.getItem(EMAIL_KEY));
+      if(!isValidUDLAEmail(email) || !isAuthorizedEmail(email)){
+        showAccessScreen("Ingresa un correo autorizado antes de continuar.");
+        return;
+      }
+      saveRecord(game.title, game.type === "external" ? "Acceso a plataforma" : "Juego abierto");
+      if(game.type === "external"){
+        window.open(game.href, "_blank", "noopener,noreferrer");
+        return;
+      }
+      currentGame = game;
+      nowTitle.textContent = game.title;
+      frame.src = game.href;
+      player.classList.add("show");
+    }
+
+    function closeGame(){
+      if(currentGame){
+        saveRecord(currentGame.title, "Juego cerrado");
+      }
+      player.classList.remove("show");
+      frame.src = "about:blank";
+      currentGame = null;
+    }
+
+    reload.addEventListener("click", () => {
+      if(currentGame){
+        saveRecord(currentGame.title, "Juego recargado");
+        frame.src = currentGame.href;
+      }
+    });
+
+    completeGame.addEventListener("click", () => {
+      if(currentGame){
+        saveRecord(currentGame.title, "Juego completado");
+        alert("Registro guardado: juego completado.");
+        closeGame();
+      }
+    });
+
+    close.addEventListener("click", closeGame);
+
+    document.addEventListener("keydown", event => {
+      if(event.key === "Escape" && player.classList.contains("show")){
+        closeGame();
+      }
+    });
+
+    requireEmail();
+    renderGames();
+  </script>
+</body>
+</html>

@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>reconoSER — Sopa de letras</title>
+<style>
+  :root {
+    --primary:#c10230;
+    --bg:#0f0f14;
+    --panel:rgba(255,255,255,.06);
+    --text:#f6f6f7;
+    --muted:rgba(246,246,247,.70);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 700px at 30% 15%, rgba(193,2,48,.22), transparent 55%),
+      radial-gradient(900px 500px at 80% 65%, rgba(255,214,10,.10), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    display:grid;
+    place-items:center;
+    padding:18px;
+  }
+  .app{
+    width:min(1100px,100%);
+    display:grid;
+    grid-template-columns:1fr 320px;
+    gap:16px;
+  }
+  @media (max-width:920px){ .app{grid-template-columns:1fr} }
+  .topbar{
+    grid-column:1/-1;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:12px 14px;border-radius:16px;
+    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    border:1px solid rgba(255,255,255,.10);
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;user-select:none}
+  .brand .name{font-weight:900;letter-spacing:.5px;font-size:22px}
+  .brand .name span{color:var(--primary)}
+  .brand .subtitle{color:var(--muted);font-size:13px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap}
+  button{
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.06);
+    color:var(--text);
+    padding:10px 12px;border-radius:12px;
+    cursor:pointer;font-weight:800;
+  }
+  button:hover{background:rgba(255,255,255,.10)}
+  button.primary{border-color:rgba(193,2,48,.55);background:rgba(193,2,48,.18)}
+  button.primary:hover{background:rgba(193,2,48,.26)}
+  .panel{background:var(--panel);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:14px}
+  .gridWrap{position:relative;overflow:hidden}
+  .watermark{
+    position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
+    opacity:.12;font-weight:900;font-size:clamp(48px,9vw,96px);
+    color:rgba(255,255,255,.15);letter-spacing:1px;
+  }
+  .watermark span{color:rgba(193,2,48,.45)}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(24, 1fr);
+    gap:4px;
+    padding:14px;
+    border-radius:16px;
+    background:rgba(0,0,0,.28);
+    border:1px solid rgba(255,255,255,.08);
+    user-select:none;
+  }
+  .cell{
+    aspect-ratio:1/1;
+    display:grid;place-items:center;
+    border-radius:10px;
+    font-weight:900;
+    letter-spacing:.5px;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.06);
+    font-size:clamp(11px,1.2vw,16px);
+  }
+  .cell.preview{outline:2px solid rgba(255,214,10,.55);background:rgba(255,214,10,.12)}
+  .cell.found{outline:2px solid rgba(43,213,118,.65);background:rgba(43,213,118,.16)}
+  .side h3{margin:0 0 10px 0;font-size:16px}
+  .hint{color:var(--muted);font-size:13px;line-height:1.35;margin-bottom:12px}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .chip{
+    padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.06);font-weight:900;font-size:12px
+  }
+  .list{display:flex;flex-direction:column;gap:8px}
+  .word{
+    padding:10px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.05);font-weight:900;line-height:1.25;
+    display:flex;align-items:center;justify-content:space-between;gap:10px
+  }
+  .word small{color:var(--muted);font-weight:800}
+  .word.done{border-color:rgba(43,213,118,.35);background:rgba(43,213,118,.12)}
+  .toast{
+    position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+    background:rgba(0,0,0,.70);border:1px solid rgba(255,255,255,.12);
+    padding:10px 12px;border-radius:12px;color:var(--text);font-weight:900;
+    display:none;z-index:10
+  }
+  .overlay{
+    position:fixed;inset:0;display:none;place-items:center;
+    background:rgba(0,0,0,.65);z-index:50;padding:18px;
+  }
+  .overlay.show{display:grid}
+  .card{
+    width:min(520px,100%);
+    border-radius:18px;border:1px solid rgba(255,255,255,.14);
+    background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+    box-shadow:0 18px 60px rgba(0,0,0,.45);
+    padding:16px;text-align:center;
+  }
+  .bigbrand{font-weight:900;letter-spacing:.6px;font-size:34px;margin:10px 0 8px 0}
+  .bigbrand span{color:var(--primary)}
+  .card h2{margin:0 0 8px 0;font-size:22px}
+  .card p{margin:0 0 14px 0;color:rgba(246,246,247,.85);line-height:1.35}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="name">recono<span>SER</span></div>
+      <div class="subtitle">Sopa de letras — Valores UDLA</div>
+    </div>
+    <div class="actions">
+      <button id="btnNew" class="primary">Nueva sopa</button>
+      <button id="btnClear">Limpiar selección</button>
+    </div>
+  </div>
+
+  <div class="panel gridWrap">
+    <div class="watermark">recono<span>SER</span></div>
+    <div id="grid" class="grid" aria-label="Sopa de letras"></div>
+  </div>
+
+  <div class="panel side">
+    <h3>Encuentra los 9 valores</h3>
+    <div class="hint">
+      Selecciona con <b>click inicio + click final</b> (100% seguro).<br/>
+      También puedes arrastrar (mouse o touch).
+    </div>
+    <div class="stats">
+      <div class="chip">Encontrados: <span id="foundCount">0</span>/9</div>
+      <div class="chip">Tablero: <span id="sizeLabel">24×24</span></div>
+    </div>
+    <div id="wordList" class="list"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="overlay" class="overlay" role="dialog" aria-modal="true">
+  <div class="card">
+    <div class="bigbrand">recono<span>SER</span></div>
+    <h2>¡Completaste la sopa! ✅</h2>
+    <p>Encontraste los 9 valores UDLA.</p>
+    <button id="btnAgain" class="primary" style="width:100%;padding:12px 14px;border-radius:14px;">Jugar de nuevo</button>
+  </div>
+</div>
+
+<script>
+  // ===== Debug: show errors on screen =====
+  (function(){
+    const bar = document.createElement("div");
+    bar.style.cssText = "position:fixed;left:12px;right:12px;top:12px;z-index:99;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.55);color:#fff;font-weight:900;display:none;";
+    document.body.appendChild(bar);
+    window.addEventListener("error", (e)=>{
+      bar.textContent = "Error: " + (e.message || "JS") + " (reconoSER)";
+      bar.style.display = "block";
+    });
+  })();
+
+  const GRID_SIZE = 24;
+  const DIRS = [
+    [ 1, 0], [-1, 0], [ 0, 1], [ 0,-1],
+    [ 1, 1], [ 1,-1], [-1, 1], [-1,-1],
+  ];
+
+  const WORDS = [
+    { display: "Libertad académica", grid: "LIBERTADACADEMICA" },
+    { display: "Búsqueda de la excelencia", grid: "BUSQUEDADELAEXCELENCIA" },
+    { display: "Innovación", grid: "INNOVACION" },
+    { display: "Humanismo", grid: "HUMANISMO" },
+    { display: "Respeto", grid: "RESPETO" },
+    { display: "Integridad", grid: "INTEGRIDAD" },
+    { display: "Resiliencia", grid: "RESILIENCIA" },
+    { display: "Inclusión", grid: "INCLUSION" },
+    { display: "Respeto al medio ambiente (ODS)", grid: "RESPETOALMEDIOAMBIENTE" },
+  ];
+
+  const gridEl = document.getElementById("grid");
+  const wordListEl = document.getElementById("wordList");
+  const foundCountEl = document.getElementById("foundCount");
+  const toastEl = document.getElementById("toast");
+  const overlayEl = document.getElementById("overlay");
+  const btnAgain = document.getElementById("btnAgain");
+
+  let GRID = [];
+  const found = new Set();
+  const foundCells = new Set();
+  let previewCells = [];
+  let clickStart = null;
+  let isDragging = false;
+  let dragStart = null;
+
+  function keyOf(r,c){ return `${r},${c}`; }
+
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.style.display = "block";
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toastEl.style.display="none", 1200);
+  }
+
+  function showOverlay(){ overlayEl.classList.add("show"); }
+  function hideOverlay(){ overlayEl.classList.remove("show"); }
+
+  function renderWordList(){
+    wordListEl.innerHTML = "";
+    WORDS.forEach(w=>{
+      const div = document.createElement("div");
+      div.className = "word" + (found.has(w.grid) ? " done" : "");
+      div.innerHTML = `<span>${w.display}</span><small>${w.grid.length} letras</small>`;
+      wordListEl.appendChild(div);
+    });
+    foundCountEl.textContent = String(found.size);
+  }
+
+  function renderGrid(){
+    gridEl.innerHTML = "";
+    for(let r=0;r<GRID_SIZE;r++) {
+      for(let c=0;c<GRID_SIZE;c++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.textContent = GRID[r][c];
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+        gridEl.appendChild(cell);
+      }
+    }
+    applyFoundStyles();
+  }
+
+  function applyFoundStyles(){
+    for(const k of foundCells) {
+      const [r,c] = k.split(",").map(Number);
+      const idx = r*GRID_SIZE + c;
+      const el = gridEl.children[idx];
+      if(el) {
+        el.classList.add("found");
+        el.classList.remove("preview");
+      }
+    }
+  }
+
+  function clearPreview(){
+    previewCells.forEach(k=>{
+      const [r,c] = k.split(",").map(Number);
+      const idx = r*GRID_SIZE + c;
+      const el = gridEl.children[idx];
+      if(el && !foundCells.has(k)) el.classList.remove("preview");
+    });
+    previewCells = [];
+  }
+
+  function previewSelection(cells){
+    clearPreview();
+    if(!cells) return;
+    previewCells = cells;
+    previewCells.forEach(k=>{
+      if(foundCells.has(k)) return;
+      const [r,c] = k.split(",").map(Number);
+      const idx = r*GRID_SIZE + c;
+      const el = gridEl.children[idx];
+      if(el) el.classList.add("preview");
+    });
+  }
+
+  function lineCells(a,b){
+    const dr = Math.sign(b.r - a.r);
+    const dc = Math.sign(b.c - a.c);
+    if(dr===0 && dc===0) return [keyOf(a.r,a.c)];
+    const lenR = Math.abs(b.r - a.r);
+    const lenC = Math.abs(b.c - a.c);
+    if(!(lenR===0 || lenC===0 || lenR===lenC)) return null;
+
+    const cells = [];
+    let r=a.r, c=a.c;
+    cells.push(keyOf(r,c));
+    while(r!==b.r || c!==b.c) {
+      r+=dr; c+=dc;
+      cells.push(keyOf(r,c));
+      if(cells.length > GRID_SIZE*GRID_SIZE) return null;
+    }
+    return cells;
+  }
+
+  function lettersFromCells(cells){
+    let s="";
+    for(const k of cells) {
+      const [r,c] = k.split(",").map(Number);
+      s += GRID[r][c];
+    }
+    return s;
+  }
+
+  function tryCommitSelection(cells){
+    if(!cells || cells.length < 2) {
+      clearPreview();
+      return;
+    }
+    const s1 = lettersFromCells(cells);
+    const s2 = s1.split("").reverse().join("");
+
+    let matched = null;
+    for(const w of WORDS) {
+      if(!found.has(w.grid) && (s1 === w.grid || s2 === w.grid)) {
+        matched = w; break;
+      }
+    }
+
+    if(matched) {
+      found.add(matched.grid);
+      cells.forEach(k=>foundCells.add(k));
+      applyFoundStyles();
+      renderWordList();
+      showToast("¡Encontraste: " + matched.display + "!");
+      if(found.size === WORDS.length) {
+        showToast("¡Completado! reconoSER ✅");
+        showOverlay();
+      }
+    } else {
+      clearPreview();
+    }
+  }
+
+  function cellFromEventTarget(t){
+    if(!t || !t.classList || !t.classList.contains("cell")) return null;
+    return { r:Number(t.dataset.r), c:Number(t.dataset.c) };
+  }
+
+  function cellFromPoint(x,y){
+    const el = document.elementFromPoint(x,y);
+    return cellFromEventTarget(el);
+  }
+
+  // ===== Input: CLICK seguro =====
+  gridEl.addEventListener("click", (e)=>{
+    const cell = cellFromEventTarget(e.target);
+    if(!cell) return;
+    if(!clickStart) {
+      clickStart = cell;
+      previewSelection([keyOf(cell.r, cell.c)]);
+      showToast("Selecciona la última letra…");
+      return;
+    }
+    const cells = lineCells(clickStart, cell);
+    clickStart = null;
+    tryCommitSelection(cells);
+  });
+
+  // ===== Input: DRAG (mouse/touch) =====
+  gridEl.addEventListener("mousedown", (e)=>{
+    const cell = cellFromPoint(e.clientX, e.clientY);
+    if(!cell) return;
+    isDragging = true;
+    dragStart = cell;
+    previewSelection([keyOf(cell.r, cell.c)]);
+    e.preventDefault();
+  });
+
+  window.addEventListener("mousemove", (e)=>{
+    if(!isDragging || !dragStart) return;
+    const cell = cellFromPoint(e.clientX, e.clientY);
+    if(!cell) return;
+    previewSelection(lineCells(dragStart, cell));
+  });
+
+  window.addEventListener("mouseup", (e)=>{
+    if(!isDragging || !dragStart) return;
+    const cell = cellFromPoint(e.clientX, e.clientY) || dragStart;
+    const cells = lineCells(dragStart, cell);
+    isDragging = false;
+    dragStart = null;
+    tryCommitSelection(cells);
+  });
+
+  gridEl.addEventListener("touchstart", (e)=>{
+    const t = e.touches[0];
+    const cell = cellFromPoint(t.clientX, t.clientY);
+    if(!cell) return;
+    isDragging = true;
+    dragStart = cell;
+    previewSelection([keyOf(cell.r, cell.c)]);
+    e.preventDefault();
+  }, {passive:false});
+
+  gridEl.addEventListener("touchmove", (e)=>{
+    if(!isDragging || !dragStart) return;
+    const t = e.touches[0];
+    const cell = cellFromPoint(t.clientX, t.clientY);
+    if(!cell) return;
+    previewSelection(lineCells(dragStart, cell));
+    e.preventDefault();
+  }, {passive:false});
+
+  gridEl.addEventListener("touchend", (e)=>{
+    if(!isDragging || !dragStart) return;
+    const cells = previewCells && previewCells.length ? previewCells : [keyOf(dragStart.r, dragStart.c)];
+    isDragging = false;
+    dragStart = null;
+    tryCommitSelection(cells);
+    e.preventDefault();
+  }, {passive:false});
+
+  document.getElementById("btnClear").addEventListener("click", ()=>{
+    clearPreview();
+    clickStart = null;
+  });
+
+  // ===== Generation =====
+  function makeEmptyGrid(){
+    return Array.from({length:GRID_SIZE}, ()=> Array.from({length:GRID_SIZE}, ()=> ""));
+  }
+
+  function canPlace(g, word, r,c, dr,dc){
+    let rr=r, cc=c;
+    for(const ch of word) {
+      if(rr<0 || rr>=GRID_SIZE || cc<0 || cc>=GRID_SIZE) return false;
+      const cell = g[rr][cc];
+      if(cell && cell !== ch) return false;
+      rr += dr; cc += dc;
+    }
+    return true;
+  }
+
+  function placeWord(g, word){
+    for(let i=0;i<6000;i++) {
+      const [dr,dc] = DIRS[Math.floor(Math.random()*DIRS.length)];
+      const r = Math.floor(Math.random()*GRID_SIZE);
+      const c = Math.floor(Math.random()*GRID_SIZE);
+      if(canPlace(g, word, r,c, dr,dc)) {
+        let rr=r, cc=c;
+        for(const ch of word) {
+          g[rr][cc] = ch;
+          rr += dr; cc += dc;
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function generatePuzzle(){
+    const g = makeEmptyGrid();
+    const sorted = [...WORDS].sort((a,b)=> b.grid.length - a.grid.length);
+    for(const w of sorted) {
+      if(!placeWord(g, w.grid)) return null;
+    }
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for(let r=0;r<GRID_SIZE;r++) {
+      for(let c=0;c<GRID_SIZE;c++) {
+        if(!g[r][c]) g[r][c] = letters[Math.floor(Math.random()*letters.length)];
+      }
+    }
+    return g;
+  }
+
+  function newPuzzle(){
+    hideOverlay();
+    let g = null;
+    for(let t=0;t<40;t++) {
+      g = generatePuzzle();
+      if(g) break;
+    }
+    if(!g) {
+      showToast("No se pudo generar. Intenta de nuevo.");
+      return;
+    }
+    GRID = g;
+    found.clear();
+    foundCells.clear();
+    clearPreview();
+    clickStart = null;
+    renderWordList();
+    renderGrid();
+    showToast("Sopa generada ✅"); startTimer();
+  }
+
+  document.getElementById("btnNew").addEventListener("click", newPuzzle);
+  btnAgain.addEventListener("click", newPuzzle);
+
+  
+  // ===== TIMER (5 MIN) =====
+  let TIME_LIMIT = 5 * 60; // seconds
+  let timeLeft = TIME_LIMIT;
+  let timerInterval = null;
+
+  const timerChip = document.createElement("div");
+  timerChip.className = "chip";
+  timerChip.id = "timerChip";
+  timerChip.textContent = "⏱ 05:00";
+  document.querySelector(".stats").appendChild(timerChip);
+
+  function formatTime(s){
+    const m = String(Math.floor(s/60)).padStart(2,"0");
+    const sec = String(s%60).padStart(2,"0");
+    return `${m}:${sec}`;
+  }
+
+  function startTimer(){
+    clearInterval(timerInterval);
+    timeLeft = TIME_LIMIT;
+    timerChip.textContent = "⏱ " + formatTime(timeLeft);
+    timerInterval = setInterval(()=>{
+      timeLeft--;
+      timerChip.textContent = "⏱ " + formatTime(timeLeft);
+      if(timeLeft<=0){
+        clearInterval(timerInterval);
+        timeLeft = 0;
+        timerChip.textContent = "⏱ 00:00";
+        revealAll();
+      }
+    },1000);
+  }
+
+  function revealAll(){
+    WORDS.forEach(w=>{
+      if(found.has(w.grid)) return;
+      // find word in grid (both directions)
+      for(let r=0;r<GRID_SIZE;r++){
+        for(let c=0;c<GRID_SIZE;c++){
+          for(const d of DIRS){
+            let cells=[];
+            let rr=r, cc=c;
+            for(let i=0;i<w.grid.length;i++){
+              if(rr<0||rr>=GRID_SIZE||cc<0||cc>=GRID_SIZE) break;
+              if(GRID[rr][cc]!==w.grid[i]) break;
+              cells.push(keyOf(rr,cc));
+              rr+=d[0]; cc+=d[1];
+            }
+            if(cells.length===w.grid.length){
+              cells.forEach(k=>foundCells.add(k));
+              found.add(w.grid);
+            }
+          }
+        }
+      }
+    });
+    applyFoundStyles();
+    renderWordList();
+    showToast("⏰ Tiempo agotado. Respuestas mostradas.");
+    showOverlay();
+  }
+
+
+  // init
+  newPuzzle();
+  startTimer();
+  renderWordList();
+</script>
+</body>
+</html>
